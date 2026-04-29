@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stockroom Check Character</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f2ff;
+    --muted: #7b82a8;
+    --accent: #4f6ef7;
+    --accent2: #7c9bff;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,0.12);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.1);
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .header-icon svg { width: 18px; height: 18px; fill: #fff; }
+  header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  header p { font-size: 13px; color: var(--muted); margin-top: 1px; }
+
+  /* ── Nav pills ── */
+  nav {
+    display: flex;
+    gap: 6px;
+    padding: 1rem 1.25rem 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover { color: var(--text); border-color: var(--accent); }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ── Main content ── */
+  main { padding: 1.25rem; display: flex; flex-direction: column; gap: 1.5rem; max-width: 640px; margin: 0 auto; }
+
+  /* ── Section cards ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-num {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+  .section-title { font-size: 15px; font-weight: 600; }
+  .section-body { padding: 1.25rem; }
+
+  /* ── Input fields ── */
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .code-input {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.15s;
+    caret-color: var(--accent);
+  }
+  .code-input:focus { border-color: var(--accent); }
+  .code-input::placeholder { color: var(--muted); font-size: 16px; letter-spacing: 0; }
+
+  /* ── Result box ── */
+  .result-box {
+    margin-top: 1rem;
+    background: var(--green-bg);
+    border: 1.5px solid var(--green);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 60px;
+    transition: all 0.2s;
+  }
+  .result-box.empty {
+    background: var(--surface2);
+    border-color: var(--border2);
+  }
+  .result-box.error {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.5);
+  }
+  .result-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+  .result-value {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--green);
+    letter-spacing: 0.04em;
+  }
+  .result-box.empty .result-value { color: var(--muted); font-size: 15px; font-family: var(--font); font-weight: 400; letter-spacing: 0; }
+  .result-box.error .result-value { color: #ef4444; font-size: 14px; font-family: var(--font); letter-spacing: 0; }
+
+  /* ── Format chips ── */
+  .format-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .format-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .chip-type { font-size: 11px; font-weight: 600; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .chip-format { font-family: var(--mono); font-size: 13px; color: var(--text); margin-bottom: 3px; }
+  .chip-example { font-size: 11px; color: var(--muted); }
+
+  /* ── Reverse lookup ── */
+  .select-row { display: flex; flex-direction: column; gap: 10px; }
+  @media (min-width: 420px) { .select-row { flex-direction: row; } }
+
+  .styled-select {
+    flex: 1;
+    width: 100%;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 11px 14px;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237b82a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+  .styled-select:focus { border-color: var(--accent); }
+
+  .search-btn {
+    flex-shrink: 0;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .search-btn:hover { opacity: 0.9; }
+  .search-btn:active { transform: scale(0.98); }
+
+  /* ── Results list ── */
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .results-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .results-count {
+    font-size: 12px;
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 99px;
+    padding: 2px 10px;
+    font-weight: 600;
+  }
+  .toggle-btns { display: flex; gap: 6px; margin-left: auto; }
+  .toggle-btn {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 480px;
+    overflow-y: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    overflow-x: hidden;
+  }
+  .results-grid::-webkit-scrollbar { width: 4px; }
+  .results-grid::-webkit-scrollbar-track { background: transparent; }
+  .results-grid::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .aisle-group { }
+  .aisle-header {
+    background: var(--surface2);
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: background 0.1s;
+  }
+  .aisle-header:hover { background: rgba(79,110,247,0.12); color: var(--accent2); }
+  .aisle-header-left { display: flex; align-items: center; gap: 8px; }
+  .aisle-count {
+    font-size: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    padding: 1px 7px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .aisle-chevron {
+    width: 14px; height: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    opacity: 0.5;
+  }
+  .aisle-header.open .aisle-chevron { transform: rotate(180deg); opacity: 1; }
+  .aisle-body {
+    display: none;
+  }
+  .aisle-body.open { display: block; }
+  .result-row {
+    display: flex;
+    align-items: center;
+    padding: 9px 12px;
+    background: var(--surface);
+    transition: background 0.1s;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row:hover { background: var(--surface2); }
+  .result-code { font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: 0.04em; }
+  .result-type { margin-left: auto; font-size: 11px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-weight: 500; }
+
+  .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted); font-size: 14px; }
+
+  /* ── Help section ── */
+  .help-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .help-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .help-q { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .help-a { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .help-icon { width: 28px; height: 28px; background: var(--surface2); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; margin-top: 2px; }
+
+  /* ── Footer ── */
+  footer { padding: 2rem 1.25rem 3rem; text-align: center; font-size: 12px; color: var(--muted); }
+
+  /* ── Animations ── */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in { animation: fadeSlideIn 0.2s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">
+    <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zm-9 8H7v-2h4v2zm6-4H7v-2h10v2zM7 3h10v2H7z"/></svg>
+  </div>
+  <div>
+    <h1>Stockroom Check Character</h1>
+    <p>Location code verification tool</p>
+  </div>
+</header>
+
+<nav>
+  <button class="pill active" onclick="scrollTo('lookup')">Code Lookup</button>
+  <button class="pill" onclick="scrollTo('reverse')">Find Locations</button>
+  <button class="pill" onclick="scrollTo('help')">How to use</button>
+</nav>
+
+<main>
+
+  <!-- ── Section 1: Code → Check Character ── -->
+  <div class="section" id="lookup">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">Code Lookup</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="field-label">Enter location code</div>
+      <input
+        class="code-input"
+        id="codeInput"
+        type="text"
+        inputmode="text"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        maxlength="6"
+        placeholder="e.g. 43KA or J6AA"
+        oninput="onCodeInput()"
+      >
+      <div class="result-box empty" id="resultBox">
+        <div>
+          <div class="result-label">Check character</div>
+          <div class="result-value" id="resultValue">type a code above</div>
+        </div>
+      </div>
+
+      <div class="format-grid">
+        <div class="format-chip">
+          <div class="chip-type">Standard</div>
+          <div class="chip-format">NNLL</div>
+          <div class="chip-example">43KA · 07PZ · 99ZZ</div>
+        </div>
+        <div class="format-chip">
+          <div class="chip-type">Jewellery</div>
+          <div class="chip-format">JNLL</div>
+          <div class="chip-example">J6AA · J1CG · J9OT</div>
+        </div>
+        <div class="format-chip">
+          <div class="chip-type">Security</div>
+          <div class="chip-format">SNLL</div>
+          <div class="chip-example">S3AA · S9CA · S1KP</div>
+        </div>
+        <div class="format-chip">
+          <div class="chip-type">Bulk</div>
+          <div class="chip-format">ZNNL</div>
+          <div class="chip-example">Z54A · Z05R · Z17A</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 2: Check Character → Locations ── -->
+  <div class="section" id="reverse">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">Find Locations</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="field-label">Filter options</div>
+      <div class="select-row">
+        <select class="styled-select" id="natoSelect">
+          <option value="">— Check character —</option>
+        </select>
+        <select class="styled-select" id="typeSelect">
+          <option value="">All types</option>
+          <option value="Standard">Standard</option>
+          <option value="Jewellery">Jewellery</option>
+          <option value="Security">Security</option>
+          <option value="Bulk">Bulk</option>
+        </select>
+        <button class="search-btn" onclick="runSearch()">Search</button>
+      </div>
+
+      <div id="resultsArea"></div>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Help ── -->
+  <div class="section" id="help">
+    <div class="section-header">
+      <div class="section-num">?</div>
+      <div><div class="section-title">How to use</div></div>
+    </div>
+    <div class="section-body">
+      <div class="help-item">
+        <div class="help-icon">1</div>
+        <div>
+          <div class="help-q">Finding a check character</div>
+          <div class="help-a">Type the full location code into the Code Lookup box above. The check character appears instantly. Codes are 4 characters long — two digits then two letters for standard locations, or a prefix letter (J, S, Z) followed by a digit and two letters.</div>
+        </div>
+      </div>
+      <div class="help-item">
+        <div class="help-icon">2</div>
+        <div>
+          <div class="help-q">Finding all locations with a check character</div>
+          <div class="help-a">Use the Find Locations section. Select the NATO word (e.g. BRAVO) from the dropdown and optionally filter by location type. Tap Search to see all matching locations, grouped by aisle.</div>
+        </div>
+      </div>
+      <div class="help-item">
+        <div class="help-icon">3</div>
+        <div>
+          <div class="help-q">Location code formats</div>
+          <div class="help-a">Standard: two digits + two letters (e.g. 43KA). Jewellery: J + digit + two letters (e.g. J6AA). Security: S + digit + two letters (e.g. S3AA). Bulk: Z + two digits + one letter (e.g. Z05R, voiced as Zero Five Bulk Romeo).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>Stockroom Check Character Tool</footer>
+
+<script>
+const NATO = ['ALPHA','BRAVO','CHARLIE','DELTA','ECHO','FOXTROT','GOLF','HOTEL','INDIA','JULIET',
+              'KILO','LIMA','MIKE','NOVEMBER','OSCAR','PAPA','QUEBEC','ROMEO','SIERRA','TANGO',
+              'UNIFORM','VICTOR','WHISKEY','X-RAY','YANKEE','ZULU'];
+const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+// Populate NATO dropdown
+const natoSel = document.getElementById('natoSelect');
+NATO.forEach(w => { const o = document.createElement('option'); o.value = w; o.textContent = w; natoSel.appendChild(o); });
+
+// ── Check character formula ──────────────────────────────────────────────────
+function getCheckChar(code) {
+  code = code.trim().toUpperCase();
+  if (code.length < 4) return null;
+  const p = code[0];
+
+  if (p === 'Z') {
+    // Bulk: Z + NN + L
+    if (code.length !== 4) return null;
+    const t = parseInt(code[1]);
+    const u = parseInt(code[2]);
+    const li = ALPHA.indexOf(code[3]);
+    if (isNaN(t) || isNaN(u) || li < 0) return null;
+    return NATO[(17 + 7*t + 7*u + 3*li) % 26];
+  }
+
+  if (!isNaN(parseInt(p))) {
+    // Standard: NN + L1 + L2
+    if (code.length !== 4) return null;
+    const t = parseInt(code[0]);
+    const u = parseInt(code[1]);
+    const l1 = ALPHA.indexOf(code[2]);
+    const l2 = ALPHA.indexOf(code[3]);
+    if (isNaN(u) || l1 < 0 || l2 < 0) return null;
+    return NATO[(4 + 5*t + 7*u + 7*l1 + 3*l2) % 26];
+  }
+
+  if (p === 'J' || p === 'S') {
+    // Named: P + N + L1 + L2
+    if (code.length !== 4) return null;
+    const base = p === 'J' ? 4 : 23;
+    const n = parseInt(code[1]);
+    const l1 = ALPHA.indexOf(code[2]);
+    const l2 = ALPHA.indexOf(code[3]);
+    if (isNaN(n) || l1 < 0 || l2 < 0) return null;
+    return NATO[(base + 7*n + 7*l1 + 3*l2) % 26];
+  }
+
+  return null;
+}
+
+// ── Code lookup ──────────────────────────────────────────────────────────────
+function onCodeInput() {
+  const val = document.getElementById('codeInput').value.trim().toUpperCase();
+  const box = document.getElementById('resultBox');
+  const rv  = document.getElementById('resultValue');
+
+  if (!val) {
+    box.className = 'result-box empty';
+    rv.textContent = 'type a code above';
+    return;
+  }
+
+  if (val.length < 4) {
+    box.className = 'result-box empty';
+    rv.textContent = '…';
+    return;
+  }
+
+  const result = getCheckChar(val);
+  if (result) {
+    box.className = 'result-box animate-in';
+    rv.textContent = result;
+  } else {
+    box.className = 'result-box error';
+    rv.textContent = 'Unrecognised format';
+  }
+}
+
+// ── Reverse lookup ───────────────────────────────────────────────────────────
+function getGroup(code, type) {
+  if (type === 'Standard') return 'Aisle ' + code.slice(0,2);
+  if (type === 'Jewellery') return 'Jewellery ' + code[1];
+  if (type === 'Security')  return 'Security ' + code[1];
+  if (type === 'Bulk')      return 'Bulk Z' + code.slice(1,3);
+  return '';
+}
+
+function runSearch() {
+  const natoWord = document.getElementById('natoSelect').value;
+  const typeFilter = document.getElementById('typeSelect').value;
+  const area = document.getElementById('resultsArea');
+
+  if (!natoWord) {
+    area.innerHTML = '<div class="empty-state">Please select a check character first.</div>';
+    return;
+  }
+
+  area.innerHTML = '<div class="empty-state" style="padding:1.5rem">Searching…</div>';
+
+  // Use setTimeout to allow UI to update before heavy computation
+  setTimeout(() => {
+    const results = [];
+
+    // Standard
+    if (!typeFilter || typeFilter === 'Standard') {
+      for (let n = 0; n < 100; n++) {
+        const t = Math.floor(n/10), u = n%10;
+        for (let li = 0; li < 26; li++) {
+          for (let lj = 0; lj < 26; lj++) {
+            if (NATO[(4+5*t+7*u+7*li+3*lj)%26] === natoWord) {
+              results.push({ code: String(n).padStart(2,'0')+ALPHA[li]+ALPHA[lj], type:'Standard', group:'Aisle '+String(n).padStart(2,'0') });
+            }
+          }
+        }
+      }
+    }
+
+    // Jewellery
+    if (!typeFilter || typeFilter === 'Jewellery') {
+      for (let n = 1; n <= 9; n++) {
+        for (let li = 0; li < 26; li++) {
+          for (let lj = 0; lj < 26; lj++) {
+            if (NATO[(4+7*n+7*li+3*lj)%26] === natoWord) {
+              results.push({ code:'J'+n+ALPHA[li]+ALPHA[lj], type:'Jewellery', group:'Jewellery '+n });
+            }
+          }
+        }
+      }
+    }
+
+    // Security
+    if (!typeFilter || typeFilter === 'Security') {
+      for (let n = 1; n <= 9; n++) {
+        for (let li = 0; li < 26; li++) {
+          for (let lj = 0; lj < 26; lj++) {
+            if (NATO[(23+7*n+7*li+3*lj)%26] === natoWord) {
+              results.push({ code:'S'+n+ALPHA[li]+ALPHA[lj], type:'Security', group:'Security '+n });
+            }
+          }
+        }
+      }
+    }
+
+    // Bulk
+    if (!typeFilter || typeFilter === 'Bulk') {
+      for (let n = 0; n < 100; n++) {
+        const t = Math.floor(n/10), u = n%10;
+        for (let j = 0; j < 26; j++) {
+          if (NATO[(17+7*t+7*u+3*j)%26] === natoWord) {
+            results.push({ code:'Z'+String(n).padStart(2,'0')+ALPHA[j], type:'Bulk', group:'Bulk Z'+String(n).padStart(2,'0') });
+          }
+        }
+      }
+    }
+
+    if (results.length === 0) {
+      area.innerHTML = '<div class="results-header"><span class="results-title">Results</span><span class="results-count">0</span></div><div class="empty-state">No locations found for <strong>'+natoWord+'</strong>.</div>';
+      return;
+    }
+
+    // Group by group label
+    const grouped = {};
+    results.forEach(r => {
+      if (!grouped[r.group]) grouped[r.group] = [];
+      grouped[r.group].push(r);
+    });
+
+    const groupCount = Object.keys(grouped).length;
+
+    let html = '<div class="results-header">';
+    html += '<span class="results-title">Results for '+natoWord+'</span>';
+    html += '<span class="results-count">'+results.length+'</span>';
+    html += '<div class="toggle-btns">';
+    html += '<button class="toggle-btn" onclick="expandAll()">Expand all</button>';
+    html += '<button class="toggle-btn" onclick="collapseAll()">Collapse all</button>';
+    html += '</div></div>';
+
+    html += '<div class="results-grid animate-in" id="resultsGrid">';
+    Object.entries(grouped).forEach(([group, items]) => {
+      const id = 'g_' + group.replace(/\s+/g,'_');
+      html += '<div class="aisle-group">';
+      html += '<div class="aisle-header" onclick="toggleGroup(\''+id+'\')" id="h_'+id+'">';
+      html += '<div class="aisle-header-left">';
+      html += '<span>'+group+'</span>';
+      html += '<span class="aisle-count">'+items.length+'</span>';
+      html += '</div>';
+      html += '<svg class="aisle-chevron" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      html += '</div>';
+      html += '<div class="aisle-body" id="'+id+'">';
+      items.forEach(item => {
+        html += '<div class="result-row"><span class="result-code">'+item.code+'</span><span class="result-type">'+item.type+'</span></div>';
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+    area.innerHTML = html;
+  }, 30);
+}
+
+// ── Nav scroll ───────────────────────────────────────────────────────────────
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ── Aisle collapse/expand ────────────────────────────────────────────────────
+function toggleGroup(id) {
+  const body = document.getElementById(id);
+  const header = document.getElementById('h_' + id);
+  if (!body || !header) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+function expandAll() {
+  document.querySelectorAll('.aisle-body').forEach(b => b.classList.add('open'));
+  document.querySelectorAll('.aisle-header').forEach(h => h.classList.add('open'));
+}
+
+function collapseAll() {
+  document.querySelectorAll('.aisle-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.aisle-header').forEach(h => h.classList.remove('open'));
+}
+</script>
+</body>
+</html>
